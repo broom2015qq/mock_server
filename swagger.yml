@@ -1,0 +1,27 @@
+basePath: /
+consumes:
+- application/json
+host: 10.161.67.230:14707
+info:
+  title: trades_tradeinfo
+  version: 1.0.0
+paths:
+  /trades/tradeinfo/:
+    post:
+      consumes:
+      - application/json
+      description: 营业全域订单信息查询基础服务，post请求
+      parameters:
+      - description: ''
+        in: !!python/tuple
+        - body
+        name: !!python/tuple
+        - sreq
+        required: !!python/tuple
+        - true
+      produces:
+      - application/json
+      summary: 营业全域订单信息查询基础服务
+produces:
+- application/json
+swagger: '2.0'

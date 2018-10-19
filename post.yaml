@@ -1,0 +1,63 @@
+#这是一个post请求的swagger_yml信息缩略
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: to_fill_in
+#开发测试生产环境的host不同
+host: 'to_fill_in'
+#basePath固定
+basePath: /
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  to_fill_in :
+    post:
+      tags:
+#        必须字段
+        - to_fill_in
+      summary: to_fill_in
+      description: to_fill_in
+      operationId: to_fill_in
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: sreq
+          description: to_fill_in
+          required: true
+          schema:
+            $ref: '#/definitions/ServiceRequest'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ServiceResponse'
+        '201':
+          description: to_fill_in
+        '400':
+          description: 输入的参数无效
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: 找不到结果数据
+#请求、返回的类型定义
+definitions:
+  ServiceResponse:
+    type: object
+    required:
+      - to_fill_in
+    properties:
+      to_fill_in : to_fill_in
+  ServiceRequest:
+    type: object
+    properties:
+      to_fill_in :
+        type: to_fill_in
+        example: 'to_fill_in'
+        description: to_fill_in

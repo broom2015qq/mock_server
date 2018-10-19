@@ -1,0 +1,245 @@
+#这是一个post请求的swagger_yml信息缩略
+swagger: '2.0'
+info:
+    version: 1.0.0
+    title: accounting1_cbdatasync_{provinceId}_{eparchyId}
+#开发测试生产环境的host不同
+host: 'locahost:8080'
+#basePath固定
+basePath: /
+consumes:
+- application/json
+produces:
+- application/json
+paths:
+    /accounting1/cbdatasync/{provinceId}/{eparchyId}:
+        post:
+            tags:
+#        必须字段
+            - accounting1-cbdatasync-{provinceId}-{eparchyId}-controller
+            summary: 数据同步yapi导入
+            description: "<p>同步crm侧数据到billing侧</p>\n"
+            operationId: to_fill_in
+            consumes:
+            - application/json
+            produces:
+            - application/json
+            parameters:
+            - in: body
+              name: sreq
+              description: request
+              required: true
+              schema:
+                  $ref: '#/definitions/ServiceRequest'
+            - name: provinceId
+              in: query
+              description: 省分
+              required: true
+              type: string
+              example: '11'
+            - name: eparchyId
+              in: query
+              description: 地市
+              required: true
+              type: string
+              example: '11'
+            - name: Content-Type
+              in: header
+              description: to_fill_in
+              required: true
+              type: string
+              example: true
+            - name: CBSS-MS-GRAY
+              in: header
+              description: CBSS-MS-GRAY
+              required: true
+              type: string
+              example: ''
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        $ref: '#/definitions/ServiceResponse'
+                '201':
+                    description: to_fill_in
+                '400':
+                    description: 输入的参数无效
+                '401':
+                    description: Unauthorized
+                '403':
+                    description: Forbidden
+                '404':
+                    description: 找不到结果数据
+#请求、返回的类型定义
+definitions:
+    ServiceResponse:
+        type: object
+        title: empty object
+        properties:
+            MSG:
+                type: string
+                description: 服务请求结果描述
+                enum:
+                - 服务调用成功！
+            RSP:
+                type: object
+                properties:
+                    ATTACH:
+                        type: object
+                        properties: {}
+                        description: 服务返回的扩展数据
+                    RSP_CODE:
+                        type: string
+                        description: 业务返回编码
+                        enum:
+                        - '0000'
+                    RSP_DESC:
+                        type: string
+                        description: 业务返回描述
+                        enum:
+                        - 成功
+                    DATA:
+                        type: array
+                        items:
+                            type: object
+                            properties:
+                                EPARCHY_CODE:
+                                    type: string
+                                    description: 地市编码
+                                    enum:
+                                    - '0010'
+                                OPERATE_ID:
+                                    type: string
+                                    description: 操作流水
+                                    enum:
+                                    - '20180123221210'
+                                OPERATE_NUM:
+                                    type: string
+                                    description: 操作表数量
+                                    enum:
+                                    - '16'
+                                OPERATE_TIME:
+                                    type: string
+                                    description: 操作时间
+                                    enum:
+                                    - '20180123221210'
+                                PROVINCE_CODE:
+                                    type: string
+                                    description: 省份编码
+                                    enum:
+                                    - '11'
+                            required: []
+                        description: 服务返回数据
+                required: []
+                description: 封装服务返回结果
+            STATUS:
+                type: string
+                description: 服务请求结果编码
+                enum:
+                - '0000'
+            TXID:
+                type: string
+                description: 服务流水号(自动生成)
+                enum:
+                - b393548b3dc5^1504165518997^70
+        required:
+        - MSG
+        - RSP
+        - STATUS
+        - TXID
+    ServiceRequest:
+        type: object
+        title: empty object
+        properties:
+            MSGBODY:
+                type: array
+                items:
+                    type: object
+                    properties:
+                        COLUMNS:
+                            type: array
+                            items:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        NAME:
+                                            type: string
+                                            description: 列名
+                                            enum:
+                                            - USER_ID
+                                            example: USER_ID
+                                        VALUE:
+                                            type: string
+                                            description: 列值
+                                            enum:
+                                            - '124343258234'
+                                            example: '124343258234'
+                                    required:
+                                    - NAME
+                                    - VALUE
+                                    description: 列信息
+                            description: 列集合
+                        OPERATE_TYPE:
+                            type: string
+                            description: 操作类型
+                            enum:
+                            - '0'
+                            example: '0'
+                        TABLE_NAME:
+                            type: string
+                            description: 表名
+                            enum:
+                            - TF_F_USER
+                            example: TF_F_USER
+                    required:
+                    - COLUMNS
+                    - OPERATE_TYPE
+                    - TABLE_NAME
+                    description: 请求报文body
+                description: 报文请求体
+            MSGHEADER:
+                type: object
+                properties:
+                    EPARCHY_CODE:
+                        type: string
+                        description: 地市编码
+                        enum:
+                        - '0010'
+                        - '0020'
+                        example: '0010'
+                    OPERATE_ID:
+                        type: string
+                        description: 操作流水
+                        enum:
+                        - '20180123221210'
+                        example: '20180123221210'
+                    OPERATE_NUM:
+                        type: string
+                        description: 操作表数量
+                        enum:
+                        - '16'
+                        example: '16'
+                    OPERATE_TIME:
+                        type: string
+                        description: 操作时间
+                        enum:
+                        - '20180123221210'
+                        example: '20180123221210'
+                    PROVINCE_CODE:
+                        type: string
+                        description: 省份编码
+                        enum:
+                        - '11'
+                        example: '11'
+                required:
+                - EPARCHY_CODE
+                - OPERATE_ID
+                - OPERATE_NUM
+                - OPERATE_TIME
+                - PROVINCE_CODE
+                description: 请求报文头
+        required:
+        - MSGBODY
+        - MSGHEADER
+        description: 数据同步请求报文
