@@ -1,7 +1,6 @@
 # 对post缩略信息进行填充
 import pymongo
 import ast
-# import yaml
 import ruamel.yaml
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedSeq
