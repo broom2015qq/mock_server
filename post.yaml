@@ -1,4 +1,4 @@
-#这是一个post请求的swagger_yml信息缩略
+#这是一个请求的swagger_yml信息缩略
 swagger: '2.0'
 info:
   version: 1.0.0
