@@ -7,10 +7,10 @@ info:
 host: 'to_fill_in'
 #basePath固定
 basePath: /
-consumes:
-  - application/json
-produces:
-  - application/json
+#consumes:
+#  - application/json
+#produces:
+#  - application/json
 paths:
   to_fill_in :
     get:
@@ -19,7 +19,8 @@ paths:
         - to_fill_in
       summary: to_fill_in
       description: to_fill_in
-      parameters: to_fill_in
+      parameters:
+        - to_fill_in
       responses:
         '200':
           description: OK

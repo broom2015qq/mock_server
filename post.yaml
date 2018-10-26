@@ -7,6 +7,10 @@ info:
 host: 'to_fill_in'
 #basePath固定
 basePath: /
+#服务总述
+tags:
+  - name: to_fill_in
+    description: to_fill_in
 consumes:
   - application/json
 produces:
