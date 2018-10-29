@@ -373,7 +373,112 @@ def generate_put_yml(item):
     with open('put_result.yaml', 'w+', encoding='utf8') as loadfile:
         yaml.dump(dataMap, loadfile)
     # file_output(dataMap)
+def generate_delete_yml(item):
+    print("生成delete类型的yml文件")
+    dataMap = generate_top(item, "delete")
+    # 这个参数是对req的总述，在yapi里没有地写
+    # parameters
+    yaml_str = """\
+        name: to_fill_in
+        in: query
+        description: to_fill_in
+        required: true
+        type: string
+        example: True
+        """
+    # 一种formdata最少量的post请求类型,req_body_type有form 还有json
+    # 这个参数是form时候，就不需要构造'#/definitions/ServiceRequest,parameters这一项也可以没有了
+    if (item["req_body_type"] == "form"):
+        # consumes参数要修改，防止codegen不识别
+        dataMap["consumes"] = ["application/x-www-form-urlencoded"]
+        for query_para in item["req_body_form"]:
+            # append内容应该是CommentedMap
+            y_temp = YAML()
+            data = y_temp.load(yaml_str)
+            data['name'] = query_para['name']
+            data['in'] = "formData"
+            data['description'] = query_para['desc']
+            if ("example" in data):
+                data['example'] = query_para['example']
+            if query_para['required'] == 0:
+                data['required'] = False
+            else:
+                data['required'] = True
+            dataMap["paths"]["to_fill_in"]["put"]["parameters"].append(data)
+            # 这里删除 #/definitions/ServiceRequest 是第0个，因为后面是append的
+            dataMap["paths"]["to_fill_in"]["put"]["parameters"].pop(0)
+            # 再删除definitions引用对象ServiceRequest
+            dataMap["definitions"].pop("ServiceRequest")
+    # req的body部分
+    if ("req_body_other" in item):
+        req = ast.literal_eval(item["req_body_other"])
+        if ('$$ref' in req.keys()):
+            req.pop("$$ref")
+        dataMap["definitions"]["ServiceRequest"] = req
+        check_enum(req["properties"])
+    # req的query部分
+    if ("req_query" in item):
+        # item["req_query"]是list
+        for query_para in item["req_query"]:
+            # append内容应该是CommentedMap
+            y_temp = YAML()
+            data = y_temp.load(yaml_str)
+            # print(query_para['name'])
+            data['name'] = query_para['name']
+            data['description'] = query_para['desc']
+            data['example'] = query_para['example']
+            if query_para['required'] == 0:
+                data['required'] = False
+            else:
+                data['required'] = True
+            dataMap["paths"]["to_fill_in"]["delete"]["parameters"].append(data)
+    # req的path部分
+    if ("req_params" in item and item["req_params"] != []):
+        for query_para in item["req_params"]:
+            # append内容应该是CommentedMap
+            y_temp = YAML()
+            data = y_temp.load(yaml_str)
+            data['name'] = query_para['name']
+            data['in'] = 'path'
+            data['description'] = query_para['desc']
+            if("example" in query_para):
+                data['example'] = query_para['example']
+            data['required'] = True
+            dataMap["paths"]["to_fill_in"]["delete"]["parameters"].append(data)
+        # header部分，判断是否有header
+        for query_para in item["req_headers"]:
+            y_temp = YAML()
+            data = y_temp.load(yaml_str)
+            data['name'] = query_para['name']
+            data['in'] = "header"
+            if ("desc" in query_para):
+                data['description'] = query_para['desc']
+            if ("example" in query_para):
+                data['example'] = query_para['example']
+            data['required'] = True
+            dataMap["paths"]["to_fill_in"]["delete"]["parameters"].append(data)
 
+    # response部分
+    # string转换为dict
+    resp = ast.literal_eval(item["res_body"])
+    if ('$$ref' in resp.keys()):
+        resp.pop("$$ref")
+    if ("properties" in resp):
+        check_enum(resp["properties"])
+    else:
+        check_enum(resp)
+    dataMap["definitions"]["ServiceResponse"] = resp
+
+    # 替换path 的key值
+    dict_temp = dataMap["paths"]
+    dataMap["paths"][item["path"]] = dict_temp.pop("to_fill_in")
+    yaml = ruamel.yaml.YAML()
+    yaml.indent(mapping=4)
+    yaml.preserve_quotes = True
+    # allow_unicode = True yaml对中文的处理
+    with open('delete_result.yaml', 'w+', encoding='utf8') as loadfile:
+        yaml.dump(dataMap, loadfile)
+    # file_output(dataMap)
 def generate_yml():
     # 连接数据库
     client = pymongo.MongoClient(host,port)
@@ -395,7 +500,9 @@ def generate_yml():
     # put类接口
     # for item in interface.find({"_id": 1089, "project_id": 69}):
     # put类接口 body
-    for item in interface.find({"_id": 873, "project_id": 15}):
+    # for item in interface.find({"_id": 873, "project_id": 15}):
+    # delete类接口
+    for item in interface.find({"_id": 1155, "project_id": 72}):
         # 判断请求类型
         # print("-------item全部信息如下-------")
         # print(item)
@@ -408,6 +515,9 @@ def generate_yml():
         elif(("method"in item) and item["method"]=="PUT"):
             print("-------PUT类接口生成yml-------")
             generate_put_yml(item)
-
-
+        elif (("method" in item) and item["method"] == "DELETE"):
+            print("-------DELETE类接口生成yml-------")
+            generate_delete_yml(item)
+        else:
+            print("未知请求类型，请检查")
 generate_yml()
