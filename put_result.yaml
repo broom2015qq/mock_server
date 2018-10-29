@@ -1,0 +1,99 @@
+#这是一个请求的swagger_yml信息缩略
+swagger: '2.0'
+info:
+    version: 1.0.0
+    title: shareacct_paylog
+#开发测试生产环境的host不同
+host: 'locahost:8080'
+#basePath固定
+basePath: /
+#服务总述
+tags:
+- name: meminfo
+  description: 营业提供家庭账户和成员账户关系信息服务
+consumes:
+- application/json
+produces:
+- application/json
+paths:
+    /shareacct/meminfo_1:
+        put:
+            tags: meminfo
+            summary: CRM提供9域家庭账户与成员账户信息修改服务_yapi写入
+            description: "<p>直接操作Oracle生产数据，非查询类服务，故禁止进行服务契约验证测试</p>\n"
+            operationId: to_fill_in
+            consumes:
+            - application/json
+            produces:
+            - application/json
+            parameters:
+            - in: body
+              name: sreq
+              description: to_fill_in
+              required: true
+              schema:
+                  $ref: '#/definitions/ServiceRequest'
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        $ref: '#/definitions/ServiceResponse'
+                '201':
+                    description: to_fill_in
+                '400':
+                    description: 输入的参数无效
+                '401':
+                    description: Unauthorized
+                '403':
+                    description: Forbidden
+                '404':
+                    description: 找不到结果数据
+#请求、返回的类型定义
+definitions:
+    ServiceResponse:
+        type: object
+        title: empty object
+        properties:
+            RspCode:
+                type: string
+                description: 返回编码：00000 调用流程返回成功
+            RspDesc:
+                type: string
+                description: 返回描述：成功返回 SUCCESS ,失败返回 具体的错误描述
+        required: []
+    ServiceRequest:
+        type: object
+        title: empty object
+        properties:
+            member:
+                type: object
+                properties:
+                    acct_id:
+                        type: string
+                        description: 账户标识
+                    acct_name:
+                        type: string
+                        description: 账户名称
+                    city_code:
+                        type: string
+                        description: 成员账户归属区县
+                    end_date:
+                        type: string
+                        description: 结束时间
+                required: []
+            trade:
+                type: object
+                properties:
+                    accept_date:
+                        type: string
+                        description: 订单受理日期
+                    accept_month:
+                        type: string
+                        description: 订单受理月份
+                    acct_id:
+                        type: string
+                        description: 账户id
+                    actor_certnum:
+                        type: string
+                required: []
+        required: []
