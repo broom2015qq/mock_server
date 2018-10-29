@@ -11,6 +11,9 @@ basePath: /
 #  - application/json
 #produces:
 #  - application/json
+tags:
+  - name: to_fill_in
+    description: to_fill_in
 paths:
   to_fill_in :
     get:

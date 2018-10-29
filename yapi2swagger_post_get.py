@@ -60,6 +60,18 @@ def generate_top(item,type):
         dataMap["paths"]["to_fill_in"][type]["tags"] = [item["path"].replace("/", '-').strip('-') + "-controller"]
         dataMap["paths"]["to_fill_in"][type]["summary"] = item["title"]
         dataMap["paths"]["to_fill_in"][type]["description"] = item["desc"]
+        # 生成服务总述
+        client = pymongo.MongoClient(host, port)
+        yapi = client['yapi']
+        interface_cat = yapi['interface_cat']
+        yaml = ruamel.yaml.YAML()
+        yaml.indent(mapping=4)
+        yaml.preserve_quotes = True
+        print("catid")
+        print(item["catid"])
+        for item_cat in interface_cat.find({"_id": item["catid"]}):
+            dataMap["tags"][0]["name"] = item_cat["name"]
+            dataMap["tags"][0]["description"] = item_cat["desc"]
         return dataMap
 
 def generate_post_yml(item):
