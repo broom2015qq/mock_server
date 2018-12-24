@@ -3,17 +3,19 @@ import pymongo
 import ast
 import ruamel.yaml
 from ruamel.yaml import YAML
+import json
+import sys
 from ruamel.yaml.comments import CommentedSeq
 from collections import OrderedDict
 # yapi mongodb地址
-host = "10.161.66.55"
+host = "39.105.158.218"
 port = 27017
-def file_output(dataMap):
+def file_output(dataMap,dir):
     yaml = ruamel.yaml.YAML()
     yaml.indent(mapping=4)
     yaml.preserve_quotes = True
     # allow_unicode = True yaml对中文的处理
-    with open('post_result.yaml', 'w+', encoding='utf8') as loadfile:
+    with open(dir+'/result.yaml', 'w+', encoding='utf8') as loadfile:
         yaml.dump(dataMap, loadfile)
 # 修正yapi(enum)和swagger(example)的错位
 def check_enum(cur_body):
@@ -50,12 +52,6 @@ def generate_top(item,type):
     yaml.indent(mapping=4)
     yaml.preserve_quotes = True
     file_name = type+".yaml"
-    # if("post" ==  type):
-    #     file_name = "post.yaml"
-    # elif("get" == type):
-    #     file_name = "get.yaml"
-    # elif("put" == type):
-    #     file_name = "put.yaml"
     with open(file_name, 'r', encoding='utf-8') as loadfile:
         print(item)
         dataMap = yaml.load(loadfile)
@@ -64,6 +60,7 @@ def generate_top(item,type):
         yaml = ruamel.yaml.YAML()
         yaml.indent(mapping=4)
         yaml.preserve_quotes = True
+        print(item["project_id"])
         for project in project.find({"_id": item["project_id"]}):
             dataMap["info"]["title"] = project["name"]
         # dataMap["info"]["title"] = item["path"].replace("/", '_').strip('_')
@@ -71,7 +68,9 @@ def generate_top(item,type):
         dataMap["host"] = 'locahost:8080'
         # tags应该写yapi的分类信息
         dataMap["paths"]["to_fill_in"][type]["summary"] = item["title"]
-        dataMap["paths"]["to_fill_in"][type]["description"] = item["desc"]
+        # 这个字段可能没有
+        if "desc" in item:
+            dataMap["paths"]["to_fill_in"][type]["description"] = item["desc"]
         # 生成服务总述
         interface_cat = yapi['interface_cat']
         yaml = ruamel.yaml.YAML()
@@ -83,7 +82,7 @@ def generate_top(item,type):
             dataMap["paths"]["to_fill_in"][type]["tags"] = item_cat["name"]
         return dataMap
 
-def generate_post_yml(item):
+def generate_post_yml(item,dir):
     print("生成post类型的yml文件")
     dataMap = generate_top(item,"post")
     # 这个参数是对req的总述，在yapi里没有地写
@@ -121,7 +120,8 @@ def generate_post_yml(item):
             dataMap["definitions"].pop("ServiceRequest")
     # req的body部分
     if ("req_body_other" in item):
-        req = ast.literal_eval(item["req_body_other"])
+        # req = ast.literal_eval(item["req_body_other"])
+        req = json.loads(item["req_body_other"])
         if ('$$ref' in req.keys()):
             req.pop("$$ref")
         dataMap["definitions"]["ServiceRequest"] = req
@@ -169,7 +169,8 @@ def generate_post_yml(item):
 
     # response部分
     # string转换为dict
-    resp = ast.literal_eval(item["res_body"])
+    # resp = ast.literal_eval(item["res_body"])
+    resp = json.loads(item["res_body"])
     if ('$$ref' in resp.keys()):
         resp.pop("$$ref")
     if("properties" in resp):
@@ -185,10 +186,10 @@ def generate_post_yml(item):
     yaml.indent(mapping=4)
     yaml.preserve_quotes = True
     # allow_unicode = True yaml对中文的处理
-    with open('post_result.yaml', 'w+', encoding='utf8') as loadfile:
-        yaml.dump(dataMap, loadfile)
-    # file_output(dataMap)
-def generate_get_yml(item):
+    # with open('result/result.yaml', 'w+', encoding='utf8') as loadfile:
+    #     yaml.dump(dataMap, loadfile)
+    file_output(dataMap,dir)
+def generate_get_yml(item,dir):
     print("生成get类型的yml文件")
     dataMap = generate_top(item,"get")
     # parameters
@@ -247,7 +248,8 @@ def generate_get_yml(item):
 
     # response部分
     # string转换为dict
-    resp = ast.literal_eval(item["res_body"])
+    # resp = ast.literal_eval(item["res_body"])
+    resp = json.loads(item["res_body"])
     if ('$$ref' in resp.keys()):
         resp.pop("$$ref")
     print("--------resp-----------")
@@ -265,9 +267,10 @@ def generate_get_yml(item):
     yaml.indent(mapping=4)
     yaml.preserve_quotes = True
     # allow_unicode = True yaml对中文的处理
-    with open('get_result.yaml', 'w+', encoding='utf8') as loadfile:
-        yaml.dump(dataMap, loadfile)
-def generate_put_yml(item):
+    # with open('result/result.yaml', 'w+', encoding='utf8') as loadfile:
+    #     yaml.dump(dataMap, loadfile)
+    file_output(dataMap, dir)
+def generate_put_yml(item,dir):
     print("生成put类型的yml文件")
     dataMap = generate_top(item, "put")
     # 这个参数是对req的总述，在yapi里没有地写
@@ -305,7 +308,8 @@ def generate_put_yml(item):
             dataMap["definitions"].pop("ServiceRequest")
     # req的body部分
     if ("req_body_other" in item):
-        req = ast.literal_eval(item["req_body_other"])
+        # req = ast.literal_eval(item["req_body_other"])
+        req = json.loads(item["req_body_other"])
         if ('$$ref' in req.keys()):
             req.pop("$$ref")
         dataMap["definitions"]["ServiceRequest"] = req
@@ -354,14 +358,25 @@ def generate_put_yml(item):
 
     # response部分
     # string转换为dict
-    resp = ast.literal_eval(item["res_body"])
-    if ('$$ref' in resp.keys()):
-        resp.pop("$$ref")
-    if ("properties" in resp):
-        check_enum(resp["properties"])
+    # resp = ast.literal_eval(item["res_body"])
+    resp =item["res_body"]
+    try:
+        resp = json.loads(item["res_body"])
+    except:
+        print("res_body不能解析为json格式")
     else:
-        check_enum(resp)
-    dataMap["definitions"]["ServiceResponse"] = resp
+        if ('$$ref' in resp.keys()):
+            resp.pop("$$ref")
+        if ("properties" in resp):
+            check_enum(resp["properties"])
+        else:
+            check_enum(resp)
+    finally:
+        dataMap["definitions"]["ServiceResponse"] = resp
+
+
+
+
 
     # 替换path 的key值
     dict_temp = dataMap["paths"]
@@ -370,10 +385,10 @@ def generate_put_yml(item):
     yaml.indent(mapping=4)
     yaml.preserve_quotes = True
     # allow_unicode = True yaml对中文的处理
-    with open('put_result.yaml', 'w+', encoding='utf8') as loadfile:
-        yaml.dump(dataMap, loadfile)
-    # file_output(dataMap)
-def generate_delete_yml(item):
+    # with open('result/result.yaml', 'w+', encoding='utf8') as loadfile:
+    #     yaml.dump(dataMap, loadfile)
+    file_output(dataMap,dir)
+def generate_delete_yml(item,dir):
     print("生成delete类型的yml文件")
     dataMap = generate_top(item, "delete")
     # 这个参数是对req的总述，在yapi里没有地写
@@ -411,7 +426,8 @@ def generate_delete_yml(item):
             dataMap["definitions"].pop("ServiceRequest")
     # req的body部分
     if ("req_body_other" in item):
-        req = ast.literal_eval(item["req_body_other"])
+        # req = ast.literal_eval(item["req_body_other"])
+        req = json.loads(item["req_body_other"])
         if ('$$ref' in req.keys()):
             req.pop("$$ref")
         dataMap["definitions"]["ServiceRequest"] = req
@@ -460,7 +476,8 @@ def generate_delete_yml(item):
 
     # response部分
     # string转换为dict
-    resp = ast.literal_eval(item["res_body"])
+    # resp = ast.literal_eval(item["res_body"])
+    resp = json.loads(item["res_body"])
     if ('$$ref' in resp.keys()):
         resp.pop("$$ref")
     if ("properties" in resp):
@@ -476,10 +493,10 @@ def generate_delete_yml(item):
     yaml.indent(mapping=4)
     yaml.preserve_quotes = True
     # allow_unicode = True yaml对中文的处理
-    with open('delete_result.yaml', 'w+', encoding='utf8') as loadfile:
-        yaml.dump(dataMap, loadfile)
-    # file_output(dataMap)
-def generate_yml():
+    # with open('result/result.yaml', 'w+', encoding='utf8') as loadfile:
+    #     yaml.dump(dataMap, loadfile)
+    file_output(dataMap,dir)
+def generate_yml(project_id,interface_id,dir):
     # 连接数据库
     client = pymongo.MongoClient(host,port)
     yapi = client['yapi']
@@ -490,7 +507,8 @@ def generate_yml():
     yaml.indent(mapping=4)
     yaml.preserve_quotes = True
     # post类型接口
-    # for item in interface.find({"_id": 141, "project_id": 106}):
+    # for item in interface.find({"_id": 6826, "project_id": 9243}):
+    for item in interface.find({"_id": int(interface_id), "project_id": int(project_id)}):
     # post form-data类型接口
     # for item in interface.find({"_id":267,"project_id":9}):
     # get类型接口 path+query
@@ -502,22 +520,34 @@ def generate_yml():
     # put类接口 body
     # for item in interface.find({"_id": 873, "project_id": 15}):
     # delete类接口
-    for item in interface.find({"_id": 1155, "project_id": 72}):
+    # for item in interface.find({"_id": 1155, "project_id": 72}):
         # 判断请求类型
-        # print("-------item全部信息如下-------")
+        print("-------item全部信息如下-------")
         # print(item)
         if(("method"in item) and item["method"]=="POST"):
             print("-------POST类接口生成yml-------")
-            generate_post_yml(item)
+            generate_post_yml(item,dir)
         elif(("method"in item) and item["method"]=="GET"):
             print("-------GET类接口生成yml-------")
-            generate_get_yml(item)
+            generate_get_yml(item,dir)
         elif(("method"in item) and item["method"]=="PUT"):
             print("-------PUT类接口生成yml-------")
-            generate_put_yml(item)
+            generate_put_yml(item,dir)
         elif (("method" in item) and item["method"] == "DELETE"):
             print("-------DELETE类接口生成yml-------")
-            generate_delete_yml(item)
+            generate_delete_yml(item,dir)
         else:
             print("未知请求类型，请检查")
-generate_yml()
+#
+#
+def main():
+    if (len(sys.argv) >= 3):
+        generate_yml(sys.argv[1],sys.argv[2],sys.argv[3])
+    else:
+        print("运行示例：python genYaml.py 5 12 .,第一个参数为project_id 第二个参数为interface_id 第三个参数为生成yaml文件的路径")
+    # generate_yml(5,12,'./')
+
+if __name__ == '__main__':
+    main()
+# generate_yml(11,20,'.')
+# generate_yml(9224,6815,'.')
